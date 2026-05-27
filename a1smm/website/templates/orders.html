@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}طلباتي — AlMasry SMM{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+  <h1 style="font-size:1.4rem;font-weight:900">📦 طلباتي</h1>
+  <a href="/services" class="btn btn-primary">➕ طلب جديد</a>
+</div>
+
+{% if orders %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>API ID</th>
+          <th>الخدمة</th>
+          <th>الرابط</th>
+          <th>الكمية</th>
+          <th>السعر</th>
+          <th>الحالة</th>
+          <th>التاريخ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><code style="color:var(--text2)">{{ o.id }}</code></td>
+          <td>
+            {% if o.api_order_id %}
+            <code style="color:var(--gold);font-size:.82rem">{{ o.api_order_id }}</code>
+            {% else %}—{% endif %}
+          </td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">
+            {{ o.service_name or '—' }}
+          </td>
+          <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            <a href="{{ o.link }}" target="_blank"
+               style="color:var(--blue);font-size:.82rem">
+              {{ o.link[:30] }}{% if o.link|length > 30 %}...{% endif %}
+            </a>
+          </td>
+          <td>{{ "{:,}".format(o.quantity) }}</td>
+          <td style="color:var(--accent2);font-weight:700">${{ "%.4f"|format(o.price) }}</td>
+          <td><span data-status="{{ o.status }}"></span></td>
+          <td style="color:var(--text2);font-size:.8rem;white-space:nowrap">
+            {{ o.created_at[:16] if o.created_at else '—' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Pagination -->
+{% if pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+  <a href="?page={{ page - 1 }}" class="page-btn">‹</a>
+  {% endif %}
+
+  {% for p in range(1, pages + 1) %}
+    {% if p == page %}
+    <span class="page-btn active">{{ p }}</span>
+    {% elif p <= 2 or p >= pages - 1 or (p >= page - 1 and p <= page + 1) %}
+    <a href="?page={{ p }}" class="page-btn">{{ p }}</a>
+    {% elif p == 3 or p == pages - 2 %}
+    <span class="page-btn" style="cursor:default">…</span>
+    {% endif %}
+  {% endfor %}
+
+  {% if page < pages %}
+  <a href="?page={{ page + 1 }}" class="page-btn">›</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="card" style="text-align:center;padding:4rem 2rem">
+  <div style="font-size:3rem;margin-bottom:1rem">📭</div>
+  <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:.5rem">لا توجد طلبات بعد</h2>
+  <p style="color:var(--text2);margin-bottom:1.5rem">ابدأ بطلب خدمتك الأولى الآن</p>
+  <a href="/services" class="btn btn-primary">🛒 استعرض الخدمات</a>
+</div>
+{% endif %}
+
+{% endblock %}

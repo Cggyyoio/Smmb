@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}الخدمات — AlMasry SMM{% endblock %}
+
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+  <h1 style="font-size:1.4rem;font-weight:900">🛒 الخدمات المتاحة</h1>
+  {% if discount %}
+  <div class="vip-badge">👑 VIP — خصم {{ discount|int }}% على جميع الخدمات</div>
+  {% endif %}
+</div>
+
+<!-- Search -->
+<div class="form-group" style="margin-bottom:1rem">
+  <input type="text" class="form-control" id="svcSearch"
+         placeholder="🔍 ابحث عن خدمة..."
+         oninput="searchServices()"/>
+</div>
+
+<!-- Platform Tabs -->
+<div class="tabs" id="platformTabs">
+  <button class="tab active" onclick="filterByPlatform(null)">🌐 الكل</button>
+  {% for p in platforms %}
+  <button class="tab" onclick="filterByPlatform({{ p.id }})">
+    {{ p.emoji or '' }} {{ p.name }}
+  </button>
+  {% endfor %}
+</div>
+
+<!-- Services Grid -->
+<div class="grid grid-3" id="servicesGrid">
+  <p style="color:var(--text2);text-align:center;padding:2rem">جاري التحميل...</p>
+</div>
+
+<!-- Order Modal -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>📦 طلب جديد</span>
+      <button class="modal-close" onclick="closeModal('orderModal')">✕</button>
+    </div>
+
+    <input type="hidden" id="orderSvcId"/>
+
+    <div style="background:var(--bg3);border-radius:8px;padding:1rem;margin-bottom:1.2rem">
+      <div style="font-weight:700;margin-bottom:.3rem" id="modalSvcName">—</div>
+      <div style="color:var(--accent2);font-weight:900" id="modalSvcPrice">—</div>
+      <div style="color:var(--text2);font-size:.82rem;margin-top:.3rem">
+        الكمية: <span id="modalMinQty">—</span> — <span id="modalMaxQty">—</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🔗 الرابط</label>
+      <input type="url" class="form-control" id="orderLink" placeholder="https://..."/>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">🔢 الكمية</label>
+      <input type="number" class="form-control" id="orderQty"
+             oninput="updateOrderTotal()" min="1"/>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;
+                background:var(--bg3);border-radius:8px;padding:.8rem 1rem;margin-bottom:1.2rem">
+      <span style="color:var(--text2)">إجمالي التكلفة:</span>
+      <span id="orderTotal" style="font-size:1.2rem;font-weight:900;color:var(--accent2)">$0.0000</span>
+    </div>
+
+    <button id="orderBtn" class="btn btn-primary btn-full btn-lg" onclick="submitOrder()">
+      ✅ تأكيد الطلب
+    </button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// بناء بيانات الخدمات مع الفلترة
+const rawServices = [
+  {% for s in services %}
+  {
+    id:            {{ s.id }},
+    name:          {{ s.name | tojson }},
+    min_qty:       {{ s.min_qty }},
+    max_qty:       {{ s.max_qty }},
+    price_per_1000:{{ s.price_per_1000 }},
+    display_price: {{ (s.price_per_1000 * (1 - {{ discount or 0 }} / 100)) }},
+    category_id:   {{ s.category_id }},
+    platform:      {% for c in categories %}{% if c.id == s.category_id %}{{ c.name | tojson }}{% endif %}{% endfor %},
+    platform_id:   {% for c in categories %}{% if c.id == s.category_id %}{{ c.platform_id }}{% endif %}{% endfor %},
+  },
+  {% endfor %}
+];
+
+initServices(rawServices);
+</script>
+{% endblock %}

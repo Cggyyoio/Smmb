@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}حسابي — AlMasry SMM{% endblock %}
+
+{% block content %}
+
+<h1 style="font-size:1.4rem;font-weight:900;margin-bottom:1.5rem">👤 حسابي</h1>
+
+<div class="grid grid-2" style="margin-bottom:1.5rem">
+
+  <!-- User Info -->
+  <div class="card">
+    <div class="card-title">👤 المعلومات الشخصية</div>
+
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+      {% if user.photo_url %}
+      <img src="{{ user.photo_url }}" style="width:60px;height:60px;border-radius:50%;border:2px solid var(--accent)"/>
+      {% else %}
+      <div style="width:60px;height:60px;border-radius:50%;background:var(--bg3);
+                  display:flex;align-items:center;justify-content:center;font-size:1.8rem">
+        👤
+      </div>
+      {% endif %}
+      <div>
+        <div style="font-weight:900;font-size:1.1rem">{{ user.first_name or '—' }}</div>
+        <div style="color:var(--text2);font-size:.85rem">
+          {% if user.username %}@{{ user.username }}{% else %}بدون يوزرنيم{% endif %}
+        </div>
+        <div style="color:var(--text2);font-size:.8rem">ID: {{ user.tg_id }}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:.8rem">
+      <div style="display:flex;justify-content:space-between;padding:.7rem;background:var(--bg3);border-radius:8px">
+        <span style="color:var(--text2)">💳 الرصيد</span>
+        <span style="font-weight:900;color:var(--accent2)">${{ "%.4f"|format(balance) }}</span>
+      </div>
+      {% if cur2_enabled and cur2_rate %}
+      <div style="display:flex;justify-content:space-between;padding:.7rem;background:var(--bg3);border-radius:8px">
+        <span style="color:var(--text2)">💱 {{ cur2_name }}</span>
+        <span style="font-weight:700;color:var(--gold)">{{ "%.1f"|format(balance * cur2_rate) }}</span>
+      </div>
+      {% endif %}
+      {% if vip %}
+      <div style="display:flex;justify-content:space-between;padding:.7rem;background:var(--bg3);border-radius:8px">
+        <span style="color:var(--text2)">👑 حالة الحساب</span>
+        <span class="vip-badge">VIP — {{ vip.discount_pct|int }}% خصم</span>
+      </div>
+      {% endif %}
+      {% if pts and pts.points %}
+      <div style="display:flex;justify-content:space-between;padding:.7rem;background:var(--bg3);border-radius:8px">
+        <span style="color:var(--text2)">🎯 النقاط</span>
+        <span style="font-weight:700;color:#58a6ff">{{ "{:,}".format(pts.points) }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- API Key -->
+  <div class="card">
+    <div class="card-title">🔑 مفتاح API</div>
+    <p style="color:var(--text2);font-size:.85rem;margin-bottom:1rem">
+      استخدمه للوصول للخدمات برمجياً من أي تطبيق
+    </p>
+
+    <div class="api-key-box" style="margin-bottom:.8rem;flex-direction:column;align-items:flex-start">
+      <span id="apiKeyText" style="word-break:break-all;font-size:.8rem">{{ api_key }}</span>
+    </div>
+
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-outline btn-sm"
+              onclick="copyText(document.getElementById('apiKeyText').textContent)">
+        📋 نسخ
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="regenerateKey()">
+        🔄 تجديد المفتاح
+      </button>
+    </div>
+
+    <!-- API Docs -->
+    <div style="margin-top:1.2rem;border-top:1px solid var(--border);padding-top:1rem">
+      <div style="font-weight:700;margin-bottom:.7rem;font-size:.9rem">📖 نقاط الـ API:</div>
+      <div style="display:grid;gap:.5rem;font-size:.8rem">
+        <div style="background:var(--bg3);border-radius:6px;padding:.5rem .8rem">
+          <span style="color:var(--accent2)">GET</span>
+          <code style="color:var(--text2)">/api/v1/balance</code>
+          <span style="color:var(--text2);font-size:.75rem"> — الرصيد</span>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:.5rem .8rem">
+          <span style="color:var(--accent2)">GET</span>
+          <code style="color:var(--text2)">/api/v1/services</code>
+          <span style="color:var(--text2);font-size:.75rem"> — الخدمات</span>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:.5rem .8rem">
+          <span style="color:var(--blue)">POST</span>
+          <code style="color:var(--text2)">/api/v1/order</code>
+          <span style="color:var(--text2);font-size:.75rem"> — طلب جديد</span>
+        </div>
+        <div style="background:var(--bg3);border-radius:6px;padding:.5rem .8rem">
+          <span style="color:var(--accent2)">GET</span>
+          <code style="color:var(--text2)">/api/v1/status</code>
+          <span style="color:var(--text2);font-size:.75rem"> — حالة طلب</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Logout -->
+<div style="text-align:center">
+  <a href="/logout" class="btn btn-danger">
+    🚪 تسجيل الخروج
+  </a>
+</div>
+
+{% endblock %}

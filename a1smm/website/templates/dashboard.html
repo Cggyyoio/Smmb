@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}الرئيسية — AlMasry SMM{% endblock %}
+
+{% block content %}
+
+<!-- ── Welcome ── -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:900">
+      👋 أهلاً، {{ user.first_name or 'مستخدم' }}
+    </h1>
+    <p style="color:var(--text2);font-size:.9rem">
+      مرحباً بك في لوحة التحكم
+    </p>
+  </div>
+  {% if vip %}
+  <div class="vip-badge">👑 VIP — خصم {{ vip.discount_pct|int }}%</div>
+  {% endif %}
+</div>
+
+<!-- ── Balance + Stats ── -->
+<div class="grid grid-2" style="margin-bottom:2rem">
+
+  <!-- Balance -->
+  <div class="balance-card">
+    <div class="balance-label">💳 رصيدك الحالي</div>
+    <div class="balance-amount">${{ "%.4f"|format(balance) }}</div>
+    {% if cur2_enabled and cur2_rate %}
+    <div style="color:var(--accent);font-size:.9rem;margin-top:.4rem">
+      ≈ {{ cur2_name }} {{ "%.1f"|format(balance * cur2_rate) }}
+    </div>
+    {% endif %}
+    <div style="margin-top:1.2rem;display:flex;gap:.8rem;justify-content:center">
+      <a href="/services" class="btn btn-primary">🛒 طلب جديد</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-2 keep-2">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
+      <div class="stat-value">{{ stats.total or 0 }}</div>
+      <div class="stat-label">إجمالي الطلبات</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-value">{{ stats.done or 0 }}</div>
+      <div class="stat-label">مكتملة</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⚙️</div>
+      <div class="stat-value">{{ stats.active or 0 }}</div>
+      <div class="stat-label">قيد التنفيذ</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💸</div>
+      <div class="stat-value">${{ "%.2f"|format(stats.spent or 0) }}</div>
+      <div class="stat-label">إجمالي الإنفاق</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── API Key ── -->
+<div class="card" style="margin-bottom:2rem">
+  <div class="card-title">🔑 مفتاح API الخاص بك</div>
+  <p style="color:var(--text2);font-size:.85rem;margin-bottom:1rem">
+    استخدم هذا المفتاح للوصول للخدمات برمجياً أو من تطبيقات أخرى
+  </p>
+  <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+    <div class="api-key-box" style="flex:1">
+      <span id="apiKeyText">{{ api_key }}</span>
+    </div>
+    <button class="btn btn-outline btn-sm"
+            onclick="copyText(document.getElementById('apiKeyText').textContent)">
+      📋 نسخ
+    </button>
+    <button class="btn btn-outline btn-sm" onclick="regenerateKey()">
+      🔄 تجديد
+    </button>
+  </div>
+  <div style="margin-top:1rem;background:var(--bg3);border-radius:8px;padding:1rem;font-size:.82rem;color:var(--text2)">
+    <strong>مثال:</strong><br/>
+    <code>GET https://a1smm.store/api/v1/balance?api_key=YOUR_KEY</code>
+  </div>
+</div>
+
+<!-- ── Recent Orders ── -->
+<div class="card">
+  <div class="card-title" style="justify-content:space-between">
+    <span>📦 آخر الطلبات</span>
+    <a href="/orders" class="btn btn-outline btn-sm">عرض الكل</a>
+  </div>
+
+  {% if orders %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>الخدمة</th>
+          <th>الكمية</th>
+          <th>السعر</th>
+          <th>الحالة</th>
+          <th>التاريخ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><code>{{ o.id }}</code></td>
+          <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            {{ o.service_name or '—' }}
+          </td>
+          <td>{{ "{:,}".format(o.quantity) }}</td>
+          <td>${{ "%.4f"|format(o.price) }}</td>
+          <td><span data-status="{{ o.status }}"></span></td>
+          <td style="color:var(--text2);font-size:.8rem">{{ o.created_at[:10] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="text-align:center;color:var(--text2);padding:2rem">
+    لا توجد طلبات بعد — <a href="/services" style="color:var(--accent2)">ابدأ طلبك الأول</a>
+  </p>
+  {% endif %}
+</div>
+
+{% endblock %}
